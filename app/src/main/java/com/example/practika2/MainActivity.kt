@@ -3,6 +3,9 @@ package com.example.smartlab
 import android.os.Bundle
 import android.text.Layout
 import android.text.style.BackgroundColorSpan
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -96,20 +99,25 @@ import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import com.example.practika2.ui.theme.Practika2Theme
-import com.example.practika2.ui.theme.components.OnboardDescription
-import com.example.practika2.ui.theme.components.SearchInput
-import com.example.practika2.ui.theme.components.TextInput
+import com.example.practika2.ui.theme.components.OnboardHeader
+import com.example.practika2.ui.theme.components.SecondaryButton
+import java.util.LinkedList
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,6 +143,8 @@ fun AppNavigator() {
         composable("mainSearch") { SearchScreen(navController) }
         composable("createPassword") { CreatePassword(navController) }
         composable("patient") { CreatePatient(navController) }
+        composable("load") { LoadScreen(navController) }
+        composable("complete") { Onboard(navController) }
     }
 }
 
@@ -159,6 +169,7 @@ fun SplashScreen(navController: NavController) {
 @Composable
 fun SearchScreen(navController: NavController) {
     Box (modifier = Modifier.background(Color.White).fillMaxSize()) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White))
         Column(modifier = Modifier
             .padding(top = 50.dp)
             .fillMaxWidth()
@@ -203,7 +214,7 @@ fun SearchScreen(navController: NavController) {
                         .height(48.dp).width(170.dp).padding(horizontal = 10.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF1A6FEE),
+                        containerColor = Color.Cyan,
                         contentColor = Color.White,
                         disabledContentColor = Color.White,
                         disabledContainerColor = Color.Blue
@@ -260,8 +271,7 @@ fun SearchScreen(navController: NavController) {
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            BottomNavigation (modifier = Modifier, backgroundColor =  Color.White, contentColor = Color.Gray) {
-                // Добавьте элементы меню
+            BottomNavigation (modifier = Modifier, backgroundColor =  Color.White, contentColor = Color.Blue) {
                 BottomNavigationItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     label = { Text("Анализы") },
@@ -272,7 +282,7 @@ fun SearchScreen(navController: NavController) {
                     icon = { Icon(Icons.Default.Person, contentDescription = null) },
                     label = { Text("Результаты") },
                     selected = false,
-                    onClick = {  },
+                    onClick = { navController.navigate("complete") },
                 )
                 BottomNavigationItem(
                     icon = { Icon(Icons.Default.Build, contentDescription = null) },
@@ -293,10 +303,6 @@ fun SearchScreen(navController: NavController) {
 }
 @Composable
 fun Code(navController: NavController) {
-    var code by remember { mutableStateOf("") }
-    val maxCodeLength = 6
-
-    // Состояние для таймера
     var timerSeconds by remember { mutableStateOf(60) }
     var isTimerRunning by remember { mutableStateOf(true) }
     val textFieldValues = remember { mutableStateListOf("", "", "", "", "", "") }
@@ -305,20 +311,21 @@ fun Code(navController: NavController) {
     LaunchedEffect(key1 = isTimerRunning) {
         if (isTimerRunning) {
             while (timerSeconds > 0) {
-                delay(1000L) // Задержка на 1 секунду
+                delay(1000L)
                 timerSeconds--
             }
             isTimerRunning = false
         }
     }
     Box (modifier = Modifier.background(Color.White).fillMaxSize()) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White))
         Row (modifier = Modifier.background(Color.White).fillMaxSize().padding(top = 60.dp).padding(horizontal = 15.dp)) {
             TextButton(
                 onClick = { navController.navigate("main") },
                 modifier = Modifier
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.back), // Ссылка на векторное изображение
+                    painter = painterResource(id = R.drawable.back),
                     contentDescription = "",
                     modifier = Modifier.size(32.dp).padding(start = 1.dp)
                 )
@@ -417,13 +424,14 @@ fun WelcomeScreen(navController: NavController) {
             .background(Color.White)
             .padding(10.dp)
     ) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White),)
         Row(Modifier.fillMaxWidth().padding(10.dp),horizontalArrangement = Arrangement.SpaceBetween) {
             TextButton(
                 onClick = { navController.navigate("main") },
                 modifier = Modifier
                     .padding(16.dp)
             ) {
-                Text("Пропустить")
+                Text(pages[pagerState.currentPage].button)
             }
             Image(
                 painter = painterResource(id = R.drawable.shape), // Ссылка на векторное изображение
@@ -502,6 +510,7 @@ data class PageData(
 @Composable
 fun MainScreen(navController: NavController) {
     Box (modifier = Modifier.background(Color.White)) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White))
         Column(modifier = Modifier
             .padding(start = 20.dp, end = 20.dp, top = 61.dp, bottom = 56.dp)
             .fillMaxWidth()
@@ -606,50 +615,15 @@ fun MainScreen(navController: NavController) {
                 modifier = Modifier
                     .weight(1f)
             )
-
-
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                text = "Или войдите с помощью",
-                color = Color(0xFF939396),
-                fontWeight = FontWeight.W400,
-                fontSize = 15.sp,
-                lineHeight = 20.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(
-                modifier = Modifier
-                    .size(16.dp)
-            )
-            Button(
-                enabled = true,
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black,
-                    disabledContentColor = Color.Black,
-                    disabledContainerColor = Color.White
-                ),
-                border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-            ) {
-                Text(
-                    text = "Войти с Яндекс",
-                    fontSize = 17.sp,
-                    lineHeight = 24.sp,
-                    fontWeight = FontWeight.W400
-                )
-            }
         }
     }
 }
 @Composable
 fun CreatePassword(navController: NavController) {
+    var PassFieldValues = remember { mutableStateListOf("", "", "", "") }
+    var indexOfPassChar by remember { mutableIntStateOf(0) }
     Box (modifier = Modifier.background(Color.White).fillMaxSize().padding(horizontal = 15.dp)) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White))
         Column(modifier = Modifier.padding(top = 60.dp)) {
             TextButton(
                 onClick = { navController.navigate("mainSearch") },
@@ -659,279 +633,154 @@ fun CreatePassword(navController: NavController) {
             }
             Text(text = "Создайте пароль", modifier = Modifier.padding(top = 10.dp).align(Alignment.CenterHorizontally))
             Text(text = "Для защиты персональных данных", modifier = Modifier.padding(top = 10.dp).align(Alignment.CenterHorizontally))
-            Image(
-                painter = painterResource(id = R.drawable.progress1), // Ссылка на векторное изображение
-                contentDescription = "",
-                contentScale = ContentScale.Fit, // Масштабирование изображения
-                modifier = Modifier.size(100.dp, 16.dp).align(Alignment.CenterHorizontally) // Размер изображения
-            )
-            Row (modifier = Modifier.padding(top = 10.dp).align(Alignment.CenterHorizontally)) {
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "1",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "2",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "3",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-            }
-            Row (modifier = Modifier.padding(top = 10.dp).align(Alignment.CenterHorizontally)) {
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "4",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "5",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "6",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-            }
-            Row (modifier = Modifier.padding(top = 10.dp).align(Alignment.CenterHorizontally)) {
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "7",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "8",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "9",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-            }
-            Row (modifier = Modifier.padding(top = 10.dp).align(Alignment.CenterHorizontally))  {
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
-                    Text(
-                        text = "0",
-                        fontSize = 17.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-                Button(
-                    enabled = true,
-                    onClick = {},
-                    modifier = Modifier
-                        .size(80.dp),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        disabledContentColor = Color.Black,
-                        disabledContainerColor = Color.White
-                    ),
-                    border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-                ) {
+            Row(modifier = Modifier. padding(top = 30.dp).align(Alignment.CenterHorizontally), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                PassFieldValues.forEachIndexed { index, value ->
+                    var painterr = painterResource(id = R.drawable.ellipse_filled)
+                    if (PassFieldValues[index]!=""){
+                        painterr = painterResource(id = R.drawable.ellipse_notfilled)
+                    }
                     Image(
-                        painter = painterResource(id = R.drawable.del_icon), // Ссылка на векторное изображение
-                        contentDescription = "",
-                        modifier = Modifier.size(32.dp).padding(start = 1.dp)
+                        painter = painterr, // Ссылка на векторное изображение
+                        contentDescription = "..",
+                        contentScale = ContentScale.Fit, // Масштабирование изображения
+                        modifier = Modifier
+                            .size(20.dp) // Размер изображения
+                            .fillMaxSize()
                     )
                 }
             }
-            Button(
-                enabled = true,
-                onClick = { navController.navigate("patient") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Blue,
-                    contentColor = Color.White,
-                    disabledContentColor = Color.White,
-                    disabledContainerColor = Color.Blue
-                ),
-                border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
-            ) {
-                Text(
-                    text = "Далее",
-                    fontSize = 17.sp,
-                    lineHeight = 24.sp,
-                    fontWeight = FontWeight.W400
-                )
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    for (row in 0 until 3) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp, alignment = Alignment.CenterHorizontally)) {
+                            for (col in 0 until 3) {
+                                val buttonNumber = row * 3 + col + 1
+                                Button(
+                                    onClick = {
+                                        if(indexOfPassChar<=3){
+                                            PassFieldValues[indexOfPassChar]=buttonNumber.toString()
+                                            indexOfPassChar++
+                                        }
+                                        else{
+
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(100.dp),
+                                    modifier = Modifier
+                                        .height(100.dp)
+                                        .width(100.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFF5F5F9),
+                                        disabledContainerColor = Color(0xFFF5F5F9)
+                                    )
+                                ) {
+                                    Text(text = buttonNumber.toString(), color = Color.Black, fontSize = 24.sp)
+                                }
+                            }
+                        }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp, alignment = Alignment.CenterHorizontally)) {
+                        Column(){
+                            Box(modifier = Modifier
+                                .height(100.dp)
+                                .width(100.dp))
+                        }
+                        Column {
+                            Button(
+                                onClick = {if(indexOfPassChar<=3){
+                                    PassFieldValues[indexOfPassChar]=0.toString()
+                                    indexOfPassChar++
+                                }
+                                else{
+                                    if(indexOfPassChar==4){
+                                        //TODO сохранение пароля
+                                    }
+                                }
+                                },
+                                shape = RoundedCornerShape(100.dp),
+                                modifier = Modifier
+                                    .height(90.dp)
+                                    .width(90.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFF5F5F9),
+                                    disabledContainerColor = Color(0xFFF5F5F9)
+                                )
+                            ) {
+                                Text(text = 0.toString(), color = Color.Black, fontSize = 24.sp)
+                            }
+                        }
+                        Column {
+                            Box(modifier = Modifier
+                                .height(100.dp)
+                                .width(100.dp), contentAlignment = Alignment.Center) {
+                                Button(
+                                    onClick = {
+                                        if(indexOfPassChar<5){
+                                            if(indexOfPassChar>=1){
+                                                PassFieldValues[indexOfPassChar-1]=""
+                                                indexOfPassChar--
+                                            }
+                                            if(indexOfPassChar==0){
+                                                PassFieldValues[indexOfPassChar]=""
+                                            }
+                                        }
+                                        else {
+
+                                        }
+                                    }, colors = ButtonDefaults.buttonColors(contentColor = Color.White, containerColor = Color.White)) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.del_icon), // Ссылка на векторное изображение
+                                        contentDescription = "..",
+                                        contentScale = ContentScale.Fit, // Масштабирование изображения
+                                        modifier = Modifier
+                                            .size(35.dp) // Размер изображения
+                                            .fillMaxSize()
+                                    )
+                                }
+                            }
+
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Button(
+                        enabled = true,
+                        onClick = {navController.navigate("patient")},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Blue,
+                            contentColor = Color.White,
+                            disabledContentColor = Color.White,
+                            disabledContainerColor = Color.Blue
+                        ),
+                        border = BorderStroke(1.dp, color = Color(0xFFEBEBEB))
+                    ) {
+                        Text(
+                            text = "Далее",
+                            fontSize = 17.sp,
+                            lineHeight = 24.sp,
+                            fontWeight = FontWeight.W400
+                        )
+                    }
+                }
             }
+
         }
+
     }
 }
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePatient(navController: NavController) {
     Box (modifier = Modifier.background(Color.White).fillMaxSize().padding(horizontal = 15.dp)) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White))
         Column(modifier = Modifier.padding(top = 60.dp)) {
             TextButton(
                 onClick = { navController.navigate("mainSearch") },
@@ -1053,6 +902,141 @@ fun CreatePatient(navController: NavController) {
                 )
             }
 
+        }
+    }
+}
+@Composable
+fun LoadScreen(navController: NavController) {
+
+
+    Box(modifier = Modifier.background(Color.White).fillMaxSize().padding(horizontal = 15.dp)) {
+        TopAppBar(title= { Text("METANIT.COM", fontSize = 1.sp)}, backgroundColor = Color.White, modifier = Modifier.background(color = Color.White))
+        Column {
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 40.dp),
+                text = "Оплата",
+                style = TextStyle(fontSize = 20.sp, color = Color.Black),
+            )
+            Image(
+                painter = painterResource(id = R.drawable.progress),
+                contentDescription = "",
+                modifier = Modifier.padding(start = 1.dp, top = 50.dp)
+            )
+        }
+    }
+}
+@Composable
+fun Onboard (navController: NavController) {
+    Box (modifier = Modifier.background(color = Color.White).verticalScroll(rememberScrollState())) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 32.dp).align(Alignment.Center),
+        ) {
+            Column (modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 15.dp)) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = "Оплата",
+                    fontSize = 20.sp,
+                    color = Color.Black,
+                    lineHeight = 28.sp,
+                    textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.W600
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .size(64.dp)
+                )
+
+                Image(
+                    painter = painterResource(id = R.drawable.illustration),
+                    contentDescription = "..",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.align(Alignment.CenterHorizontally).size(400.dp)
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .size(31.dp)
+                )
+
+                OnboardHeader(
+                    text = "Ваш заказ успешно оплачен!",
+                    modifier = Modifier
+                        .fillMaxWidth().align(Alignment.CenterHorizontally)
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .size(10.dp)
+                )
+
+
+                OnboardDescription(
+                    text = "Вам осталось дождаться приезда медсестры и сдать анализы. \n" +
+                            "До скорой встречи!",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 42.dp).align(Alignment.CenterHorizontally)
+
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .size(10.dp)
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                    OnboardDescription(
+                        text = "Не забудьте ознакомиться с ",
+                        modifier = Modifier
+                            .padding(start = 36.dp)
+                    )
+
+                    Image(
+                        ImageBitmap.imageResource(R.drawable.icons),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(width = 13.dp, height = 13.dp)
+                    )
+
+                    com.example.practika2.ui.theme.components.TextButton(
+                        modifier = Modifier,
+                        text = " правилами"
+                    )
+                }
+
+                com.example.practika2.ui.theme.components.TextButton(
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 10.dp)
+                    ,
+                    text = "подготовки к сдаче анализов"
+                )
+
+                Spacer(
+                    modifier = Modifier
+                        .weight(1f)
+                )
+
+                SecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    text = "Чек покупки"
+                ) { }
+
+                Spacer(
+                    modifier = Modifier
+                        .size(20.dp)
+                )
+
+                PrimaryButton(modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth()
+                    .height(56.dp), text = "На главную", onClick = {
+                    navController.navigate("mainSearch")
+
+                })
+
+            }
         }
     }
 }
