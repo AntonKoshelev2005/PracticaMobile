@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.practika2"
+    namespace = "com.example.smartlab"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.practika2"
+        applicationId = "com.example.smartlab"
         minSdk = 30
         targetSdk = 34
         versionCode = 1
@@ -40,7 +40,12 @@ android {
 }
 
 dependencies {
-
+    implementation (libs.ui)
+    implementation (libs.androidx.material)
+    implementation (libs.ui.tooling.preview)
+    implementation (libs.androidx.lifecycle.runtime.ktx.v260)
+    implementation (libs.androidx.activity.compose.v160)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -49,7 +54,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
